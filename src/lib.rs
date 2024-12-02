@@ -17,7 +17,9 @@ mod test{
             Instructions::Push(40),
             Instructions::Sub,
             Instructions::Push(2),
-            Instructions::Mul
+            Instructions::Mul,
+            Instructions::Push(23),
+            Instructions::Div
         ];
         let mut vm = VM::new(program);
         if let Err(error) = vm.run() {
