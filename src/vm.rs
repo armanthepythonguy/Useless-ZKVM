@@ -26,11 +26,11 @@ pub struct VM{
 
 impl VM{
 
-    fn new(insruction: Vec<Instructions>) -> Self{
+    pub fn new(insruction: Vec<Instructions>) -> Self{
         Self { stack: [0;4], sp: 0, instructions: insruction, ip: 0, trace: vec![] }
     }
 
-    fn run(&mut self) -> Result<(), String>{
+    pub fn run(&mut self) -> Result<(), String>{
         while self.ip<self.instructions.len(){
             let instruction = self.instructions[self.ip].clone();
             self.ip += 1;
@@ -68,7 +68,31 @@ impl VM{
         Ok(())
     }
 
-    fn generate_trace(&self){
+    pub fn get_trace(&self) -> Vec<[i32;10]>{
+        let mut final_trace: Vec<[i32;10]> = vec![[0,0,0,0,0,0,0,0,0,0]];
+        for i in self.trace.iter(){
+            match i.instruction {
+                Instructions::Push(val) => {
+                    final_trace.push([i.stack[0],i.stack[1],i.stack[2],i.stack[3], val, 1, 0, 0,0,0]);
+                },
+                Instructions::Add =>{
+                    final_trace.push([i.stack[0],i.stack[1],i.stack[2],i.stack[3], 0, 0, 1, 0,0,0]);
+                },
+                Instructions::Sub =>{
+                    final_trace.push([i.stack[0],i.stack[1],i.stack[2],i.stack[3], 0, 0, 0, 1,0,0]);
+                },
+                Instructions::Mul =>{
+                    final_trace.push([i.stack[0],i.stack[1],i.stack[2],i.stack[3], 0, 0, 0, 0,1,0]);
+                },
+                Instructions::Div =>{
+                    final_trace.push([i.stack[0],i.stack[1],i.stack[2],i.stack[3], 0, 0, 0, 0,0,1]);
+                }
+            }
+        }
+        final_trace
+    }
+
+    pub fn generate_trace(&self){
 
         let mut final_trace: Vec<[i32;10]> = vec![[0,0,0,0,0,0,0,0,0,0]];
         for i in self.trace.iter(){
