@@ -2,6 +2,9 @@ mod p3;
 mod vm;
 
 mod test {
+    use p3_field::{extension::BinomialExtensionField, Field, FieldAlgebra, PrimeField32};
+    use p3_mersenne_31::Mersenne31;
+
     use crate::{
         p3::VMAir,
         vm::{Instructions, VM},
@@ -11,14 +14,14 @@ mod test {
     fn test_end_to_end() {
         //Generating the trace for the required program
         let program = vec![
-            Instructions::Push(10),
-            Instructions::Push(20),
+            Instructions::Push(Mersenne31::from_canonical_u32(10)), // Push 10
+            Instructions::Push(Mersenne31::from_canonical_u32(20)), // Push 20
             Instructions::Add,
-            Instructions::Push(40),
+            Instructions::Push(Mersenne31::from_canonical_u32(40)), // Push 40
             Instructions::Sub,
-            Instructions::Push(2),
+            Instructions::Push(Mersenne31::from_canonical_u32(2)), // Push 2
             Instructions::Mul,
-            Instructions::Push(23),
+            Instructions::Push(Mersenne31::from_canonical_u32(23)), // Push 23
             Instructions::Div,
         ];
         let mut vm = VM::new(program);
@@ -26,7 +29,6 @@ mod test {
             println!("{}", error);
             return;
         }
-        vm.generate_trace();
 
         //Generating proofs for the program
         let vmair = VMAir {};

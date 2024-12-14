@@ -4,7 +4,7 @@ use p3_air::{Air, AirBuilder, BaseAir};
 use p3_challenger::{HashChallenger, SerializingChallenger32};
 use p3_circle::CirclePcs;
 use p3_commit::ExtensionMmcs;
-use p3_field::{extension::BinomialExtensionField, Field};
+use p3_field::{extension::BinomialExtensionField, Field, PrimeField32};
 use p3_fri::FriConfig;
 use p3_keccak::Keccak256Hash;
 use p3_matrix::{dense::RowMajorMatrix, Matrix};
@@ -131,7 +131,7 @@ pub fn get_trace<F: Field>(vm: VM) -> RowMajorMatrix<F> {
     let mut final_trace = Vec::with_capacity(trace.len() * 11);
     for i in trace.iter() {
         for j in i.iter() {
-            final_trace.push(F::from_canonical_u32((*j).try_into().unwrap()));
+            final_trace.push(F::from_canonical_u32(j.as_canonical_u32()));
         }
     }
 
