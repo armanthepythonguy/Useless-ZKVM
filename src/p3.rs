@@ -10,8 +10,8 @@ use p3_keccak::Keccak256Hash;
 use p3_matrix::{dense::RowMajorMatrix, Matrix};
 use p3_merkle_tree::MerkleTreeMmcs;
 use p3_mersenne_31::Mersenne31;
-use p3_symmetric::{CompressionFunctionFromHasher, SerializingHasher32};
-use p3_uni_stark::{prove, verify, StarkConfig};
+use p3_symmetric::{CompressionFunctionFromHasher, SerializingHasher};
+use p3_uni_stark::{prove, verify, PcsError, StarkConfig, VerificationError};
 
 use crate::vm::VM;
 
@@ -22,13 +22,23 @@ impl<F: Field> BaseAir<F> for VMAir {
         11
     }
 }
+type Val = Mersenne31;
+type Challenge = BinomialExtensionField<Val, 3>;
+type ByteHash = Keccak256Hash;
+type FieldHash = SerializingHasher<ByteHash>;
+type MyCompress = CompressionFunctionFromHasher<ByteHash, 2, 32>;
+type ValMmcs = MerkleTreeMmcs<Val, u8, FieldHash, MyCompress, 32>;
+type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
+type Challenger = SerializingChallenger32<Val, HashChallenger<u8, ByteHash, 32>>;
+type Pcs = CirclePcs<Val, ValMmcs, ChallengeMmcs>;
+#[allow(dead_code)]
+type MyConfig = StarkConfig<Pcs, Challenge, Challenger>;
 
 impl<AB: AirBuilder> Air<AB> for VMAir {
     fn eval(&self, builder: &mut AB) {
         let main = builder.main();
-        let local = main.row_slice(0);
-        let next = main.row_slice(1);
-
+        let local = main.row_slice(0).unwrap();
+        let next = main.row_slice(1).unwrap();
         builder.when_first_row().assert_zero(
             local[0]
                 + local[1]
@@ -81,24 +91,16 @@ impl<AB: AirBuilder> Air<AB> for VMAir {
 }
 
 impl VMAir {
-    pub fn generate_proof(&self, vm: VM) {
-        type Val = Mersenne31;
-        type Challenge = BinomialExtensionField<Val, 3>;
-        type ByteHash = Keccak256Hash;
-        type FieldHash = SerializingHasher32<ByteHash>;
+    pub fn generate_proof(&self, vm: VM) -> Result<(), VerificationError<PcsError<MyConfig>>> {
         let byte_hash = ByteHash {};
         let field_hash = FieldHash::new(byte_hash);
 
-        type MyCompress = CompressionFunctionFromHasher<ByteHash, 2, 32>;
         let compress = MyCompress::new(byte_hash);
 
-        type ValMmcs = MerkleTreeMmcs<Val, u8, FieldHash, MyCompress, 32>;
         let val_mmcs = ValMmcs::new(field_hash, compress);
 
-        type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
         let challenge_mmcs = ChallengeMmcs::new(val_mmcs.clone());
 
-        type Challenger = SerializingChallenger32<Val, HashChallenger<u8, ByteHash, 32>>;
         let mut challenger = Challenger::from_hasher(vec![], byte_hash);
 
         let fri_config = FriConfig {
@@ -106,21 +108,20 @@ impl VMAir {
             num_queries: 40,
             proof_of_work_bits: 8,
             mmcs: challenge_mmcs,
+            log_final_poly_len: todo!(),
         };
 
-        type Pcs = CirclePcs<Val, ValMmcs, ChallengeMmcs>;
         let pcs = Pcs {
             mmcs: val_mmcs,
             fri_config,
             _phantom: PhantomData,
         };
 
-        type MyConfig = StarkConfig<Pcs, Challenge, Challenger>;
-        let config = MyConfig::new(pcs);
+        let config = MyConfig::new(pcs, challenger);
 
         let trace = get_trace(vm);
-        let proof = prove(&config, self, &mut challenger, trace, &vec![]);
-        verify(&config, self, &mut challenger, &proof, &vec![]);
+        let proof = prove(&config, self, trace, &vec![]);
+        verify(&config, self, &proof, &vec![])
     }
 }
 
@@ -131,7 +132,7 @@ pub fn get_trace<F: Field>(vm: VM) -> RowMajorMatrix<F> {
     let mut final_trace = Vec::with_capacity(trace.len() * 11);
     for i in trace.iter() {
         for j in i.iter() {
-            final_trace.push(F::from_canonical_u32(j.as_canonical_u32()));
+            final_trace.push(F::from_u32(j.as_canonical_u32()));
         }
     }
 
