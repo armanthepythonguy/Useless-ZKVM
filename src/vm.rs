@@ -1,6 +1,4 @@
-use std::{collections::HashMap, fs::File, io::Write};
-
-use p3_field::FieldAlgebra;
+use p3_field::PrimeCharacteristicRing;
 use p3_mersenne_31::Mersenne31;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -29,11 +27,11 @@ pub struct VM {
 }
 
 impl VM {
-    pub fn new(insruction: Vec<Instructions>) -> Self {
+    pub fn new(instruction: Vec<Instructions>) -> Self {
         Self {
             stack: [Mersenne31::ZERO; 4],
             sp: 0,
-            instructions: insruction,
+            instructions: instruction,
             ip: 0,
             trace: vec![],
         }
@@ -82,7 +80,7 @@ impl VM {
         &mut self,
         operation: F,
         sub_operation: Option<G>,
-    ) -> Result<(Mersenne31), String>
+    ) -> Result<Mersenne31, String>
     where
         F: Fn(Mersenne31, Mersenne31) -> Mersenne31,
         G: Fn(Mersenne31, Mersenne31) -> Mersenne31,
@@ -102,7 +100,7 @@ impl VM {
         }
         self.stack[0] = result;
         self.stack[3] = Mersenne31::ZERO;
-        Ok((extra_data))
+        Ok(extra_data)
     }
 
     pub fn get_trace(&self) -> Vec<[Mersenne31; 11]> {
@@ -190,10 +188,9 @@ impl VM {
     }
 }
 
+#[cfg(test)]
 mod tests {
-    use core::error;
-
-    use p3_field::FieldAlgebra;
+    use p3_field::PrimeCharacteristicRing;
     use p3_mersenne_31::Mersenne31;
 
     use crate::vm::{Instructions, VM};
@@ -201,8 +198,8 @@ mod tests {
     #[test]
     fn check_add_operation() {
         let program = vec![
-            Instructions::Push(Mersenne31::from_canonical_u32(10)), // Push 10
-            Instructions::Push(Mersenne31::from_canonical_u32(20)), // Push 20
+            Instructions::Push(Mersenne31::from_u32(10)), // Push 10
+            Instructions::Push(Mersenne31::from_u32(20)), // Push 20
             Instructions::Add,                                      // Add top two values (10 + 20)
         ];
 
@@ -215,7 +212,7 @@ mod tests {
         assert_eq!(
             vm.stack,
             [
-                Mersenne31::from_canonical_u32(30),
+                Mersenne31::from_u32(30),
                 Mersenne31::ZERO,
                 Mersenne31::ZERO,
                 Mersenne31::ZERO
@@ -226,8 +223,8 @@ mod tests {
     #[test]
     fn check_sub_operation() {
         let program = vec![
-            Instructions::Push(Mersenne31::from_canonical_u32(10)), // Push 10
-            Instructions::Push(Mersenne31::from_canonical_u32(20)), // Push 20
+            Instructions::Push(Mersenne31::from_u32(10)), // Push 10
+            Instructions::Push(Mersenne31::from_u32(20)), // Push 20
             Instructions::Sub,                                      // Sub top two values (20-10)
         ];
 
@@ -240,7 +237,7 @@ mod tests {
         assert_eq!(
             vm.stack,
             [
-                Mersenne31::from_canonical_u32(10),
+                Mersenne31::from_u32(10),
                 Mersenne31::ZERO,
                 Mersenne31::ZERO,
                 Mersenne31::ZERO
@@ -251,8 +248,8 @@ mod tests {
     #[test]
     fn check_mul_operation() {
         let program = vec![
-            Instructions::Push(Mersenne31::from_canonical_u32(10)), // Push 10
-            Instructions::Push(Mersenne31::from_canonical_u32(20)), // Push 20
+            Instructions::Push(Mersenne31::from_u32(10)), // Push 10
+            Instructions::Push(Mersenne31::from_u32(20)), // Push 20
             Instructions::Mul,                                      // Mul top two values (10 * 20)
         ];
 
@@ -265,7 +262,7 @@ mod tests {
         assert_eq!(
             vm.stack,
             [
-                Mersenne31::from_canonical_u32(200),
+                Mersenne31::from_u32(200),
                 Mersenne31::ZERO,
                 Mersenne31::ZERO,
                 Mersenne31::ZERO
@@ -276,8 +273,8 @@ mod tests {
     #[test]
     fn check_div_operation() {
         let program = vec![
-            Instructions::Push(Mersenne31::from_canonical_u32(10)), // Push 10
-            Instructions::Push(Mersenne31::from_canonical_u32(20)), // Push 20
+            Instructions::Push(Mersenne31::from_u32(10)), // Push 10
+            Instructions::Push(Mersenne31::from_u32(20)), // Push 20
             Instructions::Div,                                      // Div top two values (20/10)
         ];
 
@@ -290,7 +287,7 @@ mod tests {
         assert_eq!(
             vm.stack,
             [
-                Mersenne31::from_canonical_u32(2),
+                Mersenne31::from_u32(2),
                 Mersenne31::ZERO,
                 Mersenne31::ZERO,
                 Mersenne31::ZERO
