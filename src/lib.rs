@@ -2,10 +2,6 @@ mod p3;
 mod vm;
 
 mod test {
-    
-    
-
-    
 
     #[test]
     fn test_end_to_end() {

@@ -1,4 +1,3 @@
-
 use p3_field::FieldAlgebra;
 use p3_mersenne_31::Mersenne31;
 
@@ -190,12 +189,6 @@ impl VM {
 }
 
 mod tests {
-    
-
-    
-    
-
-    
 
     #[test]
     fn check_add_operation() {
