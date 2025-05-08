@@ -1,4 +1,3 @@
-use std::{collections::HashMap, fs::File, io::Write};
 
 use p3_field::FieldAlgebra;
 use p3_mersenne_31::Mersenne31;
@@ -82,7 +81,7 @@ impl VM {
         &mut self,
         operation: F,
         sub_operation: Option<G>,
-    ) -> Result<(Mersenne31), String>
+    ) -> Result<Mersenne31, String>
     where
         F: Fn(Mersenne31, Mersenne31) -> Mersenne31,
         G: Fn(Mersenne31, Mersenne31) -> Mersenne31,
@@ -102,7 +101,7 @@ impl VM {
         }
         self.stack[0] = result;
         self.stack[3] = Mersenne31::ZERO;
-        Ok((extra_data))
+        Ok(extra_data)
     }
 
     pub fn get_trace(&self) -> Vec<[Mersenne31; 11]> {
@@ -191,12 +190,12 @@ impl VM {
 }
 
 mod tests {
-    use core::error;
+    
 
-    use p3_field::FieldAlgebra;
-    use p3_mersenne_31::Mersenne31;
+    
+    
 
-    use crate::vm::{Instructions, VM};
+    
 
     #[test]
     fn check_add_operation() {

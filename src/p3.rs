@@ -1,4 +1,4 @@
-use std::{fs::File, io::Read, marker::PhantomData};
+use std::marker::PhantomData;
 
 use p3_air::{Air, AirBuilder, BaseAir};
 use p3_challenger::{HashChallenger, SerializingChallenger32};
@@ -11,7 +11,7 @@ use p3_matrix::{dense::RowMajorMatrix, Matrix};
 use p3_merkle_tree::MerkleTreeMmcs;
 use p3_mersenne_31::Mersenne31;
 use p3_symmetric::{CompressionFunctionFromHasher, SerializingHasher32};
-use p3_uni_stark::{prove, verify, Proof, StarkConfig};
+use p3_uni_stark::{prove, verify, StarkConfig};
 
 use crate::vm::VM;
 

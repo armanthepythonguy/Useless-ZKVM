@@ -2,13 +2,10 @@ mod p3;
 mod vm;
 
 mod test {
-    use p3_field::{extension::BinomialExtensionField, Field, FieldAlgebra, PrimeField32};
-    use p3_mersenne_31::Mersenne31;
+    
+    
 
-    use crate::{
-        p3::VMAir,
-        vm::{Instructions, VM},
-    };
+    
 
     #[test]
     fn test_end_to_end() {
