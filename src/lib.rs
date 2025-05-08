@@ -1,8 +1,15 @@
 mod p3;
 mod vm;
 
+#[cfg(test)]
 mod test {
+    use p3_field::FieldAlgebra;
+    use p3_mersenne_31::Mersenne31;
 
+    use crate::{
+        p3::VMAir,
+        vm::{Instructions, VM},
+    };
     #[test]
     fn test_end_to_end() {
         //Generating the trace for the required program

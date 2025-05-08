@@ -27,11 +27,11 @@ pub struct VM {
 }
 
 impl VM {
-    pub fn new(insruction: Vec<Instructions>) -> Self {
+    pub fn new(instruction: Vec<Instructions>) -> Self {
         Self {
             stack: [Mersenne31::ZERO; 4],
             sp: 0,
-            instructions: insruction,
+            instructions: instruction,
             ip: 0,
             trace: vec![],
         }
@@ -188,7 +188,12 @@ impl VM {
     }
 }
 
+#[cfg(test)]
 mod tests {
+    use p3_field::FieldAlgebra;
+    use p3_mersenne_31::Mersenne31;
+
+    use crate::vm::{Instructions, VM};
 
     #[test]
     fn check_add_operation() {
