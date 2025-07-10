@@ -29,18 +29,9 @@ impl<AB: AirBuilder> Air<AB> for VMAir {
         let local = main.row_slice(0);
         let next = main.row_slice(1);
 
-        builder.when_first_row().assert_zero(
-            local[0]
-                + local[1]
-                + local[2]
-                + local[3]
-                + local[4]
-                + local[5]
-                + local[6]
-                + local[7]
-                + local[8]
-                + local[9],
-        );
+        for i in 0..9 {
+            builder.when_first_row().assert_zero(local[i]);
+        }
 
         //Constraints for add computation
         builder
